@@ -1,0 +1,151 @@
+<script setup>
+import draggable from 'vuedraggable'
+import { ref, computed, onMounted } from 'vue'
+import ColorThief from 'colorthief'
+
+const links = ref([
+  { id: 1, name: 'Google', url: 'https://google.com' },
+  { id: 2, name: 'Facebook', url: 'https://facebook.com' },
+  { id: 3, name: 'Twitter', url: 'https://twitter.com' },
+  { id: 4, name: 'Instagram', url: 'https://instagram.com' },
+  { id: 5, name: 'LinkedIn', url: 'https://linkedin.com' },
+  { id: 6, name: 'YouTube', url: 'https://youtube.com' },
+  { id: 7, name: 'Reddit', url: 'https://reddit.com' },
+  { id: 8, name: 'Pinterest', url: 'https://pinterest.com' },
+  { id: 9, name: 'GitHub', url: 'https://github.com' },
+  { id: 10, name: 'Stack Overflow', url: 'https://stackoverflow.com' },
+  { id: 11, name: 'Wikipedia', url: 'https://wikipedia.org' },
+  { id: 12, name: 'Amazon', url: 'https://amazon.com' },
+  { id: 13, name: 'Netflix', url: 'https://netflix.com' },
+  { id: 14, name: 'Spotify', url: 'https://spotify.com' },
+  { id: 15, name: 'Twitch', url: 'https://twitch.tv' },
+  { id: 16, name: 'WhatsApp', url: 'https://whatsapp.com' },
+  { id: 17, name: 'TikTok', url: 'https://tiktok.com' },
+  { id: 18, name: 'Snapchat', url: 'https://snapchat.com' },
+  { id: 19, name: 'Discord', url: 'https://discord.com' },
+  { id: 20, name: 'Slack', url: 'https://slack.com' },
+  { id: 21, name: 'Zoom', url: 'https://zoom.us' },
+  { id: 22, name: 'Microsoft', url: 'https://microsoft.com' },
+  { id: 23, name: 'Apple', url: 'https://apple.com' },
+])
+
+const list = links.value.map((entry, index) => {
+  return { ...entry, order: index + 1 }
+})
+
+const drag = ref(false)
+
+const dragOptions = computed(() => {
+  return {
+    animation: 300,
+    group: 'description',
+    disabled: false,
+  }
+})
+
+const getAverageColor = (url) => {
+  return new Promise((resolve, reject) => {
+    const colorThief = new ColorThief()
+    const img = new Image()
+
+    img.addEventListener('load', function () {
+      try {
+        const [r, g, b] = colorThief.getColor(img)
+        const val = `rgba(${r},${g},${b})`
+
+        resolve(val)
+      } catch (error) {
+        reject(error)
+      }
+    })
+
+    img.addEventListener('error', function (error) {
+      reject(error)
+    })
+
+    let googleProxyURL =
+      'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url='
+    img.crossOrigin = 'Anonymous'
+    img.src = googleProxyURL + encodeURIComponent(url)
+  })
+}
+
+const linkColors = ref({})
+
+onMounted(async () => {
+  for (const link of list) {
+    try {
+      linkColors.value[link.url] = await getAverageColor(link.url)
+    } catch (error) {
+      linkColors.value[link.url] = '#666666' // Fallback color
+      console.log(error)
+    }
+  }
+})
+
+const getColorByUrl = (url) => {
+  return linkColors.value[url] || '#666666'
+}
+</script>
+
+<template>
+  <div>
+    <draggable
+      class="flex flex-wrap justify-center gap-4 max-w-screen-2xl"
+      :component-data="{ type: 'transition-group', name: !drag ? 'flip-list' : null }"
+      item-key="order"
+      tag="ul"
+      v-bind="dragOptions"
+      v-model="list"
+      @start="drag = true"
+      @end="drag = false"
+    >
+      <template #item="{ element }">
+        <li>
+          <a :href="element.url" target="_blank">
+            <div
+              class="size-24 rounded-2xl flex flex-col items-center justify-center select-none"
+              @click="element.fixed = !element.fixed"
+              :style="`background-color: ${getColorByUrl(element.url)}; `"
+            >
+              <span class="size-12 rounded-full inline-grid place-content-center">
+                <img
+                  class="size-8 rounded"
+                  :src="`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${element.url}&size=32`"
+                  alt=""
+                />
+              </span>
+              <p class="text-xs text-center text-gray-900">{{ element.name }}</p>
+            </div>
+          </a>
+        </li>
+      </template>
+    </draggable>
+  </div>
+</template>
+
+<style>
+.button {
+  margin-top: 35px;
+}
+
+.flip-list-move {
+  transition: transform 0.5s;
+}
+
+.no-move {
+  transition: transform 0s;
+}
+
+.list-group {
+  min-height: 20px;
+}
+
+.list-group-item {
+  cursor: move;
+}
+
+.list-group-item i {
+  cursor: pointer;
+}
+</style>
