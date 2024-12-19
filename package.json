@@ -13,6 +13,8 @@
   "dependencies": {
     "color.js": "^1.2.0",
     "colorthief": "^2.6.0",
+    "css-houdini-squircle": "^0.3.0",
+    "css-paint-polyfill": "^3.4.0",
     "figma-squircle": "^1.1.0",
     "vue": "^3.5.13",
     "vuedraggable": "^4.1.0"
