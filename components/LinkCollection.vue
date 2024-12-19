@@ -40,6 +40,7 @@ const dragOptions = computed(() => {
     animation: 300,
     group: 'description',
     disabled: false,
+    ghostClass: 'ghost',
   }
 })
 
@@ -50,8 +51,8 @@ const getAverageColor = (url) => {
 
     img.addEventListener('load', function () {
       try {
-        const [r, g, b] = colorThief.getColor(img)
-        const val = `rgba(${r},${g},${b})`
+        const [r, g, b] = colorThief.getPalette(img)[3]
+        const val = `rgba(${r},${g},${b}, 0.2)`
 
         resolve(val)
       } catch (error) {
@@ -63,10 +64,9 @@ const getAverageColor = (url) => {
       reject(error)
     })
 
-    let googleProxyURL =
-      'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url='
+    let proxy = 'https://favicone.com/'
     img.crossOrigin = 'Anonymous'
-    img.src = googleProxyURL + encodeURIComponent(url)
+    img.src = proxy + encodeURIComponent(url.split('https://')[1]) + '?s=32'
   })
 }
 
@@ -102,16 +102,16 @@ const getColorByUrl = (url) => {
     >
       <template #item="{ element }">
         <li>
-          <a :href="element.url" target="_blank">
+          <a :href="element.url" target="_blank" class="card relative z-20">
             <div
               class="size-24 rounded-2xl flex flex-col items-center justify-center select-none"
               @click="element.fixed = !element.fixed"
-              :style="`background-color: ${getColorByUrl(element.url)}; `"
+              :style="`background-color: ${getColorByUrl(element.url)};`"
             >
               <span class="size-12 rounded-full inline-grid place-content-center">
                 <img
                   class="size-8 rounded"
-                  :src="`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${element.url}&size=32`"
+                  :src="`https://favicone.com/${element.url.split('https://')[1]}?s=32`"
                   alt=""
                 />
               </span>
@@ -125,6 +125,14 @@ const getColorByUrl = (url) => {
 </template>
 
 <style>
+.card:after {
+  content: '';
+  @apply w-full h-full absolute top-0 left-0 rounded-2xl bg-neutral-700 -z-10;
+}
+
+.ghost {
+  opacity: 0;
+}
 .button {
   margin-top: 35px;
 }
