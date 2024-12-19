@@ -41,6 +41,8 @@ const dragOptions = computed(() => {
     group: 'description',
     disabled: false,
     ghostClass: 'ghost',
+    forceFallback: true,
+    fallbackClass: 'sortable-fallback',
   }
 })
 
@@ -101,23 +103,27 @@ const getColorByUrl = (url) => {
       @end="drag = false"
     >
       <template #item="{ element }">
-        <li>
-          <a :href="element.url" target="_blank" class="card relative z-20">
-            <div
-              class="size-24 rounded-2xl flex flex-col items-center justify-center select-none"
-              @click="element.fixed = !element.fixed"
-              :style="`background-color: ${getColorByUrl(element.url)};`"
+        <li class="card relative">
+          <div
+            class="size-24 select-none squircle"
+            @click="element.fixed = !element.fixed"
+            :style="`background-color: ${getColorByUrl(element.url)};`"
+          >
+            <a
+              :href="element.url"
+              target="_blank"
+              class="w-full h-full flex flex-col items-center justify-center"
             >
               <span class="size-12 rounded-full inline-grid place-content-center">
                 <img
                   class="size-8 rounded"
-                  :src="`https://favicone.com/${element.url.split('https://')[1]}?s=32`"
+                  :src="`https://favicone.com/${element.url.split('https://')[1]}?s=64`"
                   alt=""
                 />
               </span>
               <p class="text-xs text-center text-gray-100">{{ element.name }}</p>
-            </div>
-          </a>
+            </a>
+          </div>
         </li>
       </template>
     </draggable>
@@ -125,9 +131,22 @@ const getColorByUrl = (url) => {
 </template>
 
 <style>
+.squircle {
+  --squircle-smooth: 2;
+  --squircle-radius: 20px;
+  mask-image: paint(squircle);
+}
+
 .card:after {
   content: '';
-  @apply w-full h-full absolute top-0 left-0 rounded-2xl -z-10 bg-gray-700;
+  @apply w-full h-full absolute top-0 left-0 -z-10 bg-neutral-600;
+  --squircle-smooth: 2;
+  --squircle-radius: 20px;
+  mask-image: paint(squircle);
+}
+
+.sortable-chosen {
+  cursor: move !important;
 }
 
 .ghost {
