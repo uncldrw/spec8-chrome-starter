@@ -4,6 +4,6 @@
 
 @layer base {
   html {
-    @apply bg-white;
+    @apply bg-neutral-100;
   }
 }
