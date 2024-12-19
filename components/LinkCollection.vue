@@ -115,7 +115,7 @@ const getColorByUrl = (url) => {
                   alt=""
                 />
               </span>
-              <p class="text-xs text-center text-gray-900">{{ element.name }}</p>
+              <p class="text-xs text-center text-gray-100">{{ element.name }}</p>
             </div>
           </a>
         </li>
