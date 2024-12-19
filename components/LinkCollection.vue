@@ -127,7 +127,7 @@ const getColorByUrl = (url) => {
 <style>
 .card:after {
   content: '';
-  @apply w-full h-full absolute top-0 left-0 rounded-2xl -z-10 bg-gray-200;
+  @apply w-full h-full absolute top-0 left-0 rounded-2xl -z-10 bg-gray-700;
 }
 
 .ghost {
