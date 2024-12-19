@@ -51,8 +51,8 @@ const getAverageColor = (url) => {
 
     img.addEventListener('load', function () {
       try {
-        const [r, g, b] = colorThief.getPalette(img)[3]
-        const val = `rgba(${r},${g},${b}, 0.2)`
+        const [r, g, b] = colorThief.getPalette(img)[2]
+        const val = `rgba(${r},${g},${b}, 0.4)`
 
         resolve(val)
       } catch (error) {
@@ -127,7 +127,7 @@ const getColorByUrl = (url) => {
 <style>
 .card:after {
   content: '';
-  @apply w-full h-full absolute top-0 left-0 rounded-2xl bg-neutral-700 -z-10;
+  @apply w-full h-full absolute top-0 left-0 rounded-2xl -z-10 bg-gray-200;
 }
 
 .ghost {
