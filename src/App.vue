@@ -6,7 +6,7 @@ import SearchBox from '../components/SearchBox.vue'
 
 <template>
   <div class="w-screen h-screen grid place-content-center">
-    <div class="flex flex-col gap-16">
+    <div class="flex flex-col gap-12">
       <SearchBox />
       <LinkCollection />
     </div>
