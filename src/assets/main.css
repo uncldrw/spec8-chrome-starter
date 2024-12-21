@@ -5,5 +5,6 @@
 @layer base {
   html {
     @apply to-neutral-900 from-neutral-700 bg-gradient-to-br;
+    font-family: 'Inter', system-ui, 'Roboto', sans-serif;
   }
 }
