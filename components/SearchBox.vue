@@ -12,13 +12,20 @@ import { Icon } from '@iconify/vue'
       </span>
       <input
         type="text"
-        class="bg-transparent focus:outline-none w-full pl-12 py-3 pr-12 text-neutral-950"
+        placeholder="Mit Google suchen oder URL eingeben"
+        class="searchbox-input bg-transparent focus:outline-none w-full pl-12 py-3 pr-12 text-neutral-950"
       />
       <span
-        class="size-8 bg-teal-600 inline-grid place-content-center z-10 absolute right-2 top-1/2 -translate-y-1/2 rounded-md"
+        class="size-8 bg-teal-600 inline-grid place-content-center z-10 absolute right-2 top-1/2 -translate-y-1/2 rounded-md cursor-pointer hover:bg-teal-700"
       >
         <Icon icon="f7:arrow-up-right" class="text-white text-2xl" />
       </span>
     </span>
   </div>
 </template>
+
+<style>
+.searchbox-input:focus-within.searchbox-input::placeholder {
+  color: transparent;
+}
+</style>
