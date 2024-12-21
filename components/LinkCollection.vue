@@ -121,7 +121,7 @@ const getColorByUrl = (url) => {
                   alt=""
                 />
               </span>
-              <p class="text-xs text-center text-gray-100">{{ element.name }}</p>
+              <p class="text-xs text-center text-gray-100 font-medium">{{ element.name }}</p>
             </a>
           </div>
         </li>
@@ -132,16 +132,16 @@ const getColorByUrl = (url) => {
 
 <style>
 .squircle {
-  --squircle-smooth: 2;
-  --squircle-radius: 20px;
+  --squircle-smooth: 0.4;
+  --squircle-radius: 14;
   mask-image: paint(squircle);
 }
 
 .card:after {
   content: '';
   @apply w-full h-full absolute top-0 left-0 -z-10 bg-neutral-600;
-  --squircle-smooth: 2;
-  --squircle-radius: 20px;
+  --squircle-smooth: 0.4;
+  --squircle-radius: 14;
   mask-image: paint(squircle);
 }
 
