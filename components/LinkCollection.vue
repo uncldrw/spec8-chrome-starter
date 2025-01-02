@@ -23,7 +23,6 @@ const links = ref([
   { id: 17, name: 'TikTok', url: 'https://tiktok.com' },
   { id: 18, name: 'Snapchat', url: 'https://snapchat.com' },
   { id: 19, name: 'Discord', url: 'https://discord.com' },
-  { id: 20, name: 'Slack', url: 'https://slack.com' },
   { id: 21, name: 'Zoom', url: 'https://zoom.us' },
   { id: 22, name: 'Microsoft', url: 'https://microsoft.com' },
   { id: 23, name: 'Apple', url: 'https://apple.com' },
