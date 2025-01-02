@@ -15,7 +15,6 @@ const links = ref([
   { id: 9, name: 'GitHub', url: 'https://github.com' },
   { id: 10, name: 'Stack Overflow', url: 'https://stackoverflow.com' },
   { id: 11, name: 'Wikipedia', url: 'https://wikipedia.org' },
-  { id: 12, name: 'Amazon', url: 'https://amazon.com' },
   { id: 13, name: 'Netflix', url: 'https://netflix.com' },
   { id: 14, name: 'Spotify', url: 'https://spotify.com' },
   { id: 15, name: 'Twitch', url: 'https://twitch.tv' },
