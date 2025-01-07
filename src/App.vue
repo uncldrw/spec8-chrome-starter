@@ -14,8 +14,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-screen h-screen grid place-content-center">
-    <div class="flex flex-col gap-12">
+  <div class="w-screen h-screen flex mt">
+    <div class="flex flex-col gap-12 w-full mt-[20vh]">
+      <h1 class="text-7xl font-bold text-white text-center mb-4">Do Awesome Stuff</h1>
       <SearchBox />
       <LinkCollection />
     </div>

@@ -2,36 +2,95 @@
 import draggable from 'vuedraggable'
 import { ref, computed, onMounted } from 'vue'
 import ColorThief from 'colorthief'
+import { Icon } from '@iconify/vue'
 
-const links = ref([
-  { id: 1, name: 'Google', url: 'https://google.com' },
-  { id: 2, name: 'Facebook', url: 'https://facebook.com' },
-  { id: 3, name: 'Twitter', url: 'https://twitter.com' },
-  { id: 4, name: 'Instagram', url: 'https://instagram.com' },
-  { id: 5, name: 'LinkedIn', url: 'https://linkedin.com' },
-  { id: 6, name: 'YouTube', url: 'https://youtube.com' },
-  { id: 7, name: 'Reddit', url: 'https://reddit.com' },
-  { id: 8, name: 'Pinterest', url: 'https://pinterest.com' },
-  { id: 9, name: 'GitHub', url: 'https://github.com' },
-  { id: 10, name: 'Stack Overflow', url: 'https://stackoverflow.com' },
-  { id: 11, name: 'Wikipedia', url: 'https://wikipedia.org' },
-  { id: 13, name: 'Netflix', url: 'https://netflix.com' },
-  { id: 14, name: 'Spotify', url: 'https://spotify.com' },
-  { id: 15, name: 'Twitch', url: 'https://twitch.tv' },
-  { id: 16, name: 'WhatsApp', url: 'https://whatsapp.com' },
-  { id: 17, name: 'TikTok', url: 'https://tiktok.com' },
-  { id: 18, name: 'Snapchat', url: 'https://snapchat.com' },
-  { id: 19, name: 'Discord', url: 'https://discord.com' },
-  { id: 21, name: 'Zoom', url: 'https://zoom.us' },
-  { id: 22, name: 'Microsoft', url: 'https://microsoft.com' },
-  { id: 23, name: 'Apple', url: 'https://apple.com' },
-])
-
-const list = links.value.map((entry, index) => {
-  return { ...entry, order: index + 1 }
-})
-
+const DB_NAME = 'linksDB'
+const STORE_NAME = 'links'
+const db = ref(null)
+const linkColors = ref({})
 const drag = ref(false)
+
+const list = ref([])
+
+// Initialisiere IndexedDB
+const initDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1)
+
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      db.value = request.result
+      resolve(db.value)
+    }
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' })
+      }
+    }
+  })
+}
+
+// Speichere Links in IndexedDB
+const saveLinks = async () => {
+  const transaction = db.value.transaction(STORE_NAME, 'readwrite')
+  const store = transaction.objectStore(STORE_NAME)
+
+  // Links mit aktualisierter Reihenfolge speichern
+  const linksToSave = list.value.map((link, index) => ({
+    ...link,
+    order: index + 1,
+    color: linkColors.value[link.url],
+  }))
+
+  for (const link of linksToSave) {
+    await store.put(link)
+  }
+}
+
+// Lade Links aus IndexedDB
+const loadLinks = async () => {
+  const transaction = db.value.transaction(STORE_NAME, 'readonly')
+  const store = transaction.objectStore(STORE_NAME)
+
+  return new Promise((resolve, reject) => {
+    const request = store.getAll()
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      const sortedLinks = request.result.sort((a, b) => a.order - b.order)
+      resolve(sortedLinks)
+    }
+  })
+}
+
+// Modifiziere onMounted
+onMounted(async () => {
+  await initDB()
+
+  // Prüfe ob Links in IndexedDB existieren
+  const savedLinks = await loadLinks()
+
+  if (savedLinks.length > 0) {
+    // Wenn ja, verwende die gespeicherten Links und Farben
+    list.value.splice(0, list.value.length, ...savedLinks)
+    savedLinks.forEach((link) => {
+      linkColors.value[link.url] = link.color
+    })
+  } else {
+    // Wenn nein, lade Farben für Standardlinks
+    for (const link of list.value) {
+      try {
+        linkColors.value[link.url] = await getAverageColor(link.url)
+      } catch (error) {
+        linkColors.value[link.url] = '#666666'
+        console.log(error)
+      }
+    }
+    // Speichere die neuen Links
+    await saveLinks()
+  }
+})
 
 const dragOptions = computed(() => {
   return {
@@ -43,6 +102,16 @@ const dragOptions = computed(() => {
     fallbackClass: 'sortable-fallback',
   }
 })
+
+const updateOrder = async () => {
+  drag.value = false
+  // Aktualisiere die Reihenfolge
+  list.value.forEach((item, index) => {
+    item.order = index + 1
+  })
+  // Speichere sofort
+  await saveLinks()
+}
 
 const getAverageColor = (url) => {
   return new Promise((resolve, reject) => {
@@ -70,10 +139,8 @@ const getAverageColor = (url) => {
   })
 }
 
-const linkColors = ref({})
-
 onMounted(async () => {
-  for (const link of list) {
+  for (const link of list.value) {
     try {
       linkColors.value[link.url] = await getAverageColor(link.url)
     } catch (error) {
@@ -86,43 +153,79 @@ onMounted(async () => {
 const getColorByUrl = (url) => {
   return linkColors.value[url] || '#666666'
 }
+
+const addLink = async () => {
+  const name = 'Test'
+  const url = 'test.de'
+  if (!name || !url) return
+
+  try {
+    const formattedUrl = url.startsWith('https://') ? url : `https://${url}`
+    const color = await getAverageColor(formattedUrl)
+
+    const newLink = {
+      id: Date.now(),
+      name,
+      url: formattedUrl,
+      order: list.value.length + 1,
+      color,
+    }
+
+    list.value.push(newLink)
+    linkColors.value[formattedUrl] = color
+    await saveLinks()
+  } catch (error) {
+    console.error('Fehler beim Hinzufügen des Links:', error)
+  }
+}
 </script>
 
 <template>
-  <div>
+  <div class="flex justify-center">
     <draggable
-      class="flex flex-wrap justify-center gap-4 max-w-screen-2xl"
-      :component-data="{ type: 'transition-group', name: !drag ? 'flip-list' : null }"
-      item-key="order"
+      class="flex flex-wrap justify-center gap-4 max-w-screen-xl"
+      :component-data="{ animation: 75 }"
+      item-key="id"
       tag="ul"
       v-bind="dragOptions"
       v-model="list"
       @start="drag = true"
-      @end="drag = false"
+      @end="updateOrder()"
     >
       <template #item="{ element }">
-        <li class="card relative">
-          <div
-            class="size-24 select-none squircle"
-            @click="element.fixed = !element.fixed"
-            :style="`background-color: ${getColorByUrl(element.url)};`"
-          >
-            <a
-              :href="element.url"
-              target="_blank"
-              class="w-full h-full flex flex-col items-center justify-center"
+        <TransitionGroup name="flip-list" tag="div">
+          <li class="card relative" :key="element.id">
+            <div
+              class="size-24 select-none squircle"
+              @click="element.fixed = !element.fixed"
+              :style="`background-color: ${getColorByUrl(element.url)};`"
             >
-              <span class="size-12 rounded-full inline-grid place-content-center">
-                <img
-                  class="size-8 rounded"
-                  :src="`https://favicone.com/${element.url.split('https://')[1]}?s=64`"
-                  alt=""
-                />
-              </span>
-              <p class="text-xs text-center text-gray-100 font-medium">{{ element.name }}</p>
-            </a>
-          </div>
-        </li>
+              <a
+                :href="element.url"
+                target="_blank"
+                class="w-full h-full flex flex-col items-center justify-center"
+              >
+                <span class="size-12 rounded-full inline-grid place-content-center">
+                  <img
+                    class="size-8 rounded"
+                    :src="`https://favicone.com/${element.url.split('https://')[1]}?s=64`"
+                    alt=""
+                  />
+                </span>
+                <p class="text-xs text-center text-gray-100 font-medium">{{ element.name }}</p>
+              </a>
+            </div>
+          </li>
+        </TransitionGroup>
+      </template>
+      <template #footer>
+        <div class="size-24 select-none grid place-content-center">
+          <Icon
+            @click="addLink"
+            icon="f7:plus-app-fill"
+            class="size-10 text-neutral-700 hover:text-neutral-600 cursor-pointer"
+          />
+        </div>
       </template>
     </draggable>
   </div>
