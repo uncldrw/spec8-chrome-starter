@@ -16,7 +16,7 @@ onMounted(async () => {
 <template>
   <div class="w-screen h-screen flex mt">
     <div class="flex flex-col gap-12 w-full mt-[20vh]">
-      <h1 class="text-7xl font-bold text-white text-center mb-4">Do Awesome Stuff</h1>
+      <h1 class="text-7xl font-bold text-white text-center mb-4">Google</h1>
       <SearchBox />
       <LinkCollection />
     </div>
@@ -26,4 +26,8 @@ onMounted(async () => {
   </div>
 </template>
 
-<script></script>
+<style>
+html {
+  interpolate-size: allow-keywords;
+}
+</style>

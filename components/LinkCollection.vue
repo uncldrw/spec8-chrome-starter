@@ -1,3 +1,4 @@
+<!-- eslint-disable no-unused-vars -->
 <script setup>
 import draggable from 'vuedraggable'
 import { ref, computed, onMounted } from 'vue'
@@ -155,8 +156,10 @@ const getColorByUrl = (url) => {
 }
 
 const addLink = async () => {
-  const name = 'Test'
-  const url = 'test.de'
+  // eslint-disable-next-line no-unused-vars
+  const mockLinks = ['test.de', 'google.com', 'youtube.com', 'facebook.com']
+  const name = `${Date.now()}`
+  const url = mockLinks[3]
   if (!name || !url) return
 
   try {
@@ -165,6 +168,7 @@ const addLink = async () => {
 
     const newLink = {
       id: Date.now(),
+      type: 'link',
       name,
       url: formattedUrl,
       order: list.value.length + 1,
@@ -178,13 +182,25 @@ const addLink = async () => {
     console.error('Fehler beim Hinzufügen des Links:', error)
   }
 }
+
+const addFolder = () => {
+  const newLink = {
+    id: Date.now(),
+    type: 'folder',
+    name: 'Neuer Ordner',
+    url: null,
+    order: list.value.length + 1,
+    open: false,
+  }
+  list.value.push(newLink)
+}
 </script>
 
 <template>
   <div class="flex justify-center">
     <draggable
-      class="flex flex-wrap justify-center gap-4 max-w-screen-xl"
-      :component-data="{ animation: 75 }"
+      class="w-full max-w-screen-xl flex flex-wrap gap-4 justify-center"
+      :component-data="{ type: 'transition-group', name: 'move-list' }"
       item-key="id"
       tag="ul"
       v-bind="dragOptions"
@@ -193,35 +209,50 @@ const addLink = async () => {
       @end="updateOrder()"
     >
       <template #item="{ element }">
-        <TransitionGroup name="flip-list" tag="div">
+        <TransitionGroup :name="!drag ? 'flip-list' : 'move-list'" tag="div" class="inline-block">
           <li class="card relative" :key="element.id">
-            <div
-              class="size-24 select-none squircle"
-              @click="element.fixed = !element.fixed"
-              :style="`background-color: ${getColorByUrl(element.url)};`"
-            >
-              <a
-                :href="element.url"
-                target="_blank"
-                class="w-full h-full flex flex-col items-center justify-center"
+            <template v-if="element.type = 'folder'">
+              <div
+                class="h-24 select-none squircle transition-all duration-700"
+                @click="element.open = !element.open"
+                :class="{ 'w-24': !element.open, 'w-auto': element.open }"
               >
-                <span class="size-12 rounded-full inline-grid place-content-center">
-                  <img
-                    class="size-8 rounded"
-                    :src="`https://favicone.com/${element.url.split('https://')[1]}?s=64`"
-                    alt=""
-                  />
-                </span>
-                <p class="text-xs text-center text-gray-100 font-medium">{{ element.name }}</p>
-              </a>
-            </div>
+                <input type="radio" name="folder" />
+                <Icon icon="fluent:folder-24-filled" class="size-8 text-gray-100"></Icon>
+                <div class="w-[32rem] transition-all">asd</div>
+              </div>
+            </template>
+            <template v-else>
+              <div
+                class="size-24 select-none squircle"
+                @click="element.fixed = !element.fixed"
+                :style="`background-color: ${getColorByUrl(element.url)};`"
+              >
+                <a
+                  :href="element.url"
+                  target="_blank"
+                  class="w-full h-full flex flex-col items-center justify-center"
+                >
+                  <span class="size-12 rounded-full inline-grid place-content-center">
+                    <img
+                      v-if="element.url"
+                      class="size-8 rounded"
+                      :src="`https://favicone.com/${element.url.split('https://')[1]}?s=64`"
+                      alt=""
+                    />
+                    <Icon v-else icon="fluent:folder-24-filled" class="size-8 text-gray-100"></Icon>
+                  </span>
+                  <p class="text-xs text-center text-gray-100 font-medium">{{ element.name }}</p>
+                </a>
+              </div>
+            </template>
           </li>
         </TransitionGroup>
       </template>
       <template #footer>
         <div class="size-24 select-none grid place-content-center">
           <Icon
-            @click="addLink"
+            @click="addFolder"
             icon="f7:plus-app-fill"
             class="size-10 text-neutral-700 hover:text-neutral-600 cursor-pointer"
           />
@@ -258,11 +289,24 @@ const addLink = async () => {
 }
 
 .flip-list-move {
-  transition: transform 0.5s;
+  transition: all 0.7s;
 }
 
-.no-move {
-  transition: transform 0s;
+.move-list-enter-active,
+.move-list-leave-active {
+  transition: all 0.7s;
+}
+
+.move-list-leave-active {
+  position: absolute;
+}
+.move-list-enter-from,
+.move-list-leave-to {
+  opacity: 0;
+}
+
+.flip-list-leave-active {
+  position: absolute;
 }
 
 .list-group {
